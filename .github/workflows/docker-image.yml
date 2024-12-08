@@ -23,6 +23,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./frontend
-          file: Dockerfile
+          file: ./frontend/Dockerfile
           push: true
           tags: vs1lence/kursach:latest
