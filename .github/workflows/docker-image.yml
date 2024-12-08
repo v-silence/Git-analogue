@@ -1,8 +1,5 @@
 name: main
-on:
-  push:
-    branches:
-      - 'deploy'
+on: workflow_dispatch
 jobs:
   deploy:
     name: build && push image to docker hub
