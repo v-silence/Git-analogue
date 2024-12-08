@@ -43,6 +43,7 @@ jobs:
           push: false
           tags: vs1lence/kursach:latest
 
+
   push:
     name: Push Docker images to Docker Hub
     needs: build
@@ -64,6 +65,7 @@ jobs:
       - name: Push frontend
         uses: docker/build-push-action@v3
         with:
+          ref: main
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
