@@ -25,7 +25,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: false  
-          tags: vs1lence/kursach:latest
+          tags: vs1lence/kursach:frontend  
 
       - name: Build Backend
         id: build-backend
@@ -34,7 +34,12 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: false  
-          tags: vs1lence/kursach:latest
+          tags: vs1lence/kursach:backend  
+
+     
+      - name: Save Docker images
+        run: |
+          docker save vs1lence/kursach:frontend vs1lence/kursach:backend -o images.tar
 
   push:
     name: Push Docker Images to Docker Hub
@@ -48,20 +53,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Load Docker images
+        run: |
+          docker load -i images.tar  # Загружаем артефакты
+
       - name: Push Frontend
-        uses: docker/build-push-action@v3
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true  
-          tags: vs1lence/kursach:latest
+        run: |
+          docker push vs1lence/kursach:frontend
 
       - name: Push Backend
-        uses: docker/build-push-action@v3
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true  
-          tags: vs1lence/kursach:latest
-
-        
+        run: |
+          docker push vs1lence/kursach:backend
