@@ -54,7 +54,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
+          
+      - name: Show repository structure
+        run: |
+          echo "Current Directory: $(pwd)"
+          echo "Listing files recursively:"
+          ls -R
+          
       - name: Push frontend
         uses: docker/build-push-action@v3
         with:
