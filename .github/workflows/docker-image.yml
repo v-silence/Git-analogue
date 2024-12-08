@@ -24,8 +24,8 @@ jobs:
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
-          push: false  
-          tags: vs1lence/kursach:frontend  
+          push: false  # Не пушим сразу
+          tags: vs1lence/kursach:frontend  # Изменяем тег
 
       - name: Build Backend
         id: build-backend
@@ -33,18 +33,26 @@ jobs:
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          push: false  
-          tags: vs1lence/kursach:backend  
+          push: false  # Не пушим сразу
+          tags: vs1lence/kursach:backend  # Изменяем тег
 
-     
+      # Сохраним образы как артефакты
       - name: Save Docker images
         run: |
-          docker save vs1lence/kursach:frontend vs1lence/kursach:backend -o images.tar
+          docker images --format "{{.Repository}}:{{.Tag}}" > images.txt
+        # Сохраняем список образов в файл
+
+      # Загрузка образов
+      - name: Upload Images Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: images
+          path: images.txt
 
   push:
     name: Push Docker Images to Docker Hub
     runs-on: ubuntu-latest
-    needs: build  
+    needs: build  # Указывает, что этот job зависит от выполнения job build
 
     steps:
       - name: Docker Login
@@ -53,9 +61,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Download Docker Images Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: images
+
       - name: Load Docker images
         run: |
-          docker load -i images.tar  # Загружаем артефакты
+          while IFS= read -r image; do
+            # Здесь выполняем push образов
+            docker pull $image  # Получаем необходимый образ
+            docker tag $image $image  # Это встроенный шаг, если образ был отклонен, удалить эту строку
+          done < images.txt
 
       - name: Push Frontend
         run: |
