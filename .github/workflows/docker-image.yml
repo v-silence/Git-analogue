@@ -22,6 +22,6 @@ jobs:
         id: build-push-api
         uses: docker/build-push-action@v3
         with:
-          file: Dockerfile
+          file: ./backend/Dockerfile
           push: true
           tags: vs1lence/kursach:latest
