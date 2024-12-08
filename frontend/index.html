@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Repository System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Code Repository System</h1>
+
+        <div id="loginForm" class="login-form">
+            <h2>Login</h2>
+            <form id="authForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="commit-form">
+                <h2>Create New Commit</h2>
+                <form id="commitForm">
+                    <input type="text" id="filename" placeholder="File name" required>
+                    <textarea id="code" placeholder="Your code here" required></textarea>
+                    <input type="text" id="message" placeholder="Commit message" required>
+                    <button type="submit">Save Commit</button>
+                </form>
+            </div>
+    
+            <div class="commits-list">
+                <h2>Recent Commits</h2>
+                <div id="commitsList"></div>
+            </div>
+        </div>
+        </div>
+
+        
+
+    <!-- Диалог подтверждения удаления -->
+    <div class="overlay" id="overlay"></div>
+    <div class="confirmation-dialog" id="deleteDialog">
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this commit?</p>
+        <div class="dialog-buttons">
+            <button onclick="cancelDelete()">Cancel</button>
+            <button class="delete-btn" onclick="confirmDelete()">Delete</button>
+        </div>
+    </div>
+
+    <script>
+        let commitToDelete = null;
+        let currentUser = null;
+
+// Обновим обработчик формы логина
+document.getElementById('authForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+    });
+
+    const result = await response.json();
+    
+    if (response.ok) {
+        currentUser = username; // Сохраняем имя пользователя
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        alert('Login successful!');
+        loadCommits();
+    } else {
+        alert('Invalid credentials!');
+    }
+});
+
+// Изменить загрузку коммитов при старте страницы
+window.addEventListener('load', () => {
+    // Теперь коммиты загружаются только после успешной авторизации
+    document.getElementById('mainContent').style.display = 'none';
+});
+
+document.getElementById('commitForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+        filename: document.getElementById('filename').value,
+        code: document.getElementById('code').value,
+        message: document.getElementById('message').value,
+        username: currentUser // Добавляем информацию о пользователе
+    };
+
+    const response = await fetch('http://localhost:5000/commit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+        loadCommits();
+        document.getElementById('commitForm').reset();
+    }
+});
+
+        async function loadCommits() {
+            const response = await fetch(`http://localhost:5000/commits`);
+            const commits = await response.json();
+            
+            const commitsList = document.getElementById('commitsList');
+            commitsList.innerHTML = commits.map(commit => `
+                <div class="commit">
+                    <div class="commit-header">
+                        <h3>${commit.filename}</h3>
+                        <span class="author">Author: ${commit.username}</span>
+                         ${commit.username === currentUser ? 
+                    `<button class="delete-btn" onclick="showDeleteDialog(${commit.id})">Delete</button>` 
+                    : ''}
+                    </div>
+                    <pre>${commit.code}</pre>
+                    <p class="message">${commit.message}</p>
+                    <p class="timestamp">${commit.created_at}</p>
+                </div>
+            `).join('');
+        }
+
+        function showDeleteDialog(commitId) {
+            commitToDelete = commitId;
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('deleteDialog').classList.add('show');
+        }
+
+        function cancelDelete() {
+            commitToDelete = null;
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('deleteDialog').classList.remove('show');
+        }
+
+        async function confirmDelete() {
+            if (commitToDelete) {
+                const response = await fetch(`http://localhost:5000/commit/${commitToDelete}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    loadCommits();
+                }
+            }
+            cancelDelete();
+        }
+
+        // Загрузка коммитов при загрузке страницы
+        window.addEventListener('load', () => {
+            loadCommits();
+        });
+    </script>
+</body>
+</html>
