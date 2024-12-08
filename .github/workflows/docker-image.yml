@@ -48,15 +48,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: push frontend
-        uses: docker/build-push-action@v3
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: vs1lence/kursach:latest
-
+          
       - name: push backend
         uses: docker/build-push-action@v3
         with:
