@@ -18,11 +18,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: build and push api
-        id: build-push-api
+      - name: build and push frontend
+        id: build-push-frontend
         uses: docker/build-push-action@v3
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
           tags: vs1lence/kursach:latest
+      - name: build and push backend
+        id: build-push-backend
+        uses: docker/build-push-action@v3
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: vs1lence/kursach:latest
+        
