@@ -1,4 +1,4 @@
-name: pipeline
+name: main
 on:
   push:
     branches:
@@ -22,7 +22,6 @@ jobs:
         id: build-push-api
         uses: docker/build-push-action@v3
         with:
-          context: .
           file: Dockerfile
           push: true
           tags: vs1lence/kursach:latest
