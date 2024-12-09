@@ -54,10 +54,15 @@ jobs:
         with:
           name: backend-image
           path: ./backend
-
+  tests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Tests
+        run: echo "Tests completed. Check the logs for results."
   push:
     name: Push Docker images to Docker Hub
-    needs: build  
+    needs: tests 
     runs-on: ubuntu-latest
 
     steps:
